@@ -1,0 +1,14 @@
+{
+  "danielsitek/asana-cli": {
+    "formula": "asana-cli",
+    "renderer": "asana_cli",
+    "tag_prefix": "v",
+    "checksum_asset": "SHA256SUMS",
+    "archives": {
+      "darwin-arm64": "asana-cli-v%{version}-darwin-arm64.tar.gz",
+      "darwin-x64": "asana-cli-v%{version}-darwin-x64.tar.gz",
+      "linux-arm64": "asana-cli-v%{version}-linux-arm64.tar.gz",
+      "linux-x64-baseline": "asana-cli-v%{version}-linux-x64-baseline.tar.gz"
+    }
+  }
+}
