@@ -68,9 +68,11 @@ jobs:
         run: |
           candidate="candidates/$FORMULA/$FORMULA.rb"
           ruby -c "$candidate"
-          cp "$candidate" "Formula/$FORMULA.rb"
-          brew install "./Formula/$FORMULA.rb"
-          brew test "$FORMULA"
+          brew tap danielsitek/homebrew-tap "$PWD"
+          tap_dir="$(brew --repository danielsitek/homebrew-tap)"
+          cp "$candidate" "$tap_dir/Formula/$FORMULA.rb"
+          brew install "danielsitek/homebrew-tap/$FORMULA"
+          brew test "danielsitek/homebrew-tap/$FORMULA"
 
   publish:
     needs: [plan, validate]
