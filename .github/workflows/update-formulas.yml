@@ -71,6 +71,7 @@ jobs:
           brew tap danielsitek/homebrew-tap "$PWD"
           tap_dir="$(brew --repository danielsitek/homebrew-tap)"
           cp "$candidate" "$tap_dir/Formula/$FORMULA.rb"
+          brew trust --formula "danielsitek/tap/$FORMULA"
           brew install "danielsitek/homebrew-tap/$FORMULA"
           brew test "danielsitek/homebrew-tap/$FORMULA"
 
