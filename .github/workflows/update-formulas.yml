@@ -1,0 +1,100 @@
+name: Update formulas
+
+on:
+  pull_request:
+  repository_dispatch:
+    types: [upstream_release]
+  workflow_dispatch:
+    inputs:
+      repository:
+        description: Allowed owner/repository (empty means all)
+        required: false
+        type: string
+      tag:
+        description: Published release tag (empty means latest)
+        required: false
+        type: string
+  schedule:
+    - cron: '23 5 * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: formula-updates
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Ruby tests
+        run: ruby -Itest test/tap_update_test.rb
+      - name: Prepare candidates from published releases
+        id: plan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          UPSTREAM_REPOSITORY: ${{ github.event.client_payload.repository || inputs.repository || '' }}
+          UPSTREAM_TAG: ${{ github.event.client_payload.tag || inputs.tag || '' }}
+        run: |
+          ruby scripts/update.rb plan > matrix.json
+          echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: formula-candidates
+          path: candidates/
+          if-no-files-found: error
+
+  validate:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        release: ${{ fromJSON(needs.plan.outputs.matrix) }}
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: formula-candidates
+          path: candidates/
+      - name: Install and test published archive
+        env:
+          FORMULA: ${{ matrix.release.formula }}
+        run: |
+          candidate="candidates/$FORMULA/$FORMULA.rb"
+          ruby -c "$candidate"
+          brew tap danielsitek/homebrew-tap "$PWD"
+          tap_dir="$(brew --repository danielsitek/homebrew-tap)"
+          cp "$candidate" "$tap_dir/Formula/$FORMULA.rb"
+          brew trust --formula "danielsitek/tap/$FORMULA"
+          brew install "danielsitek/homebrew-tap/$FORMULA"
+          brew test "danielsitek/homebrew-tap/$FORMULA"
+
+  publish:
+    needs: [plan, validate]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    strategy:
+      max-parallel: 1
+      matrix:
+        release: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: formula-candidates
+          path: candidates/
+      - name: Commit verified formula if newer
+        env:
+          REPOSITORY: ${{ matrix.release.repository }}
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          ruby scripts/update.rb publish "$REPOSITORY"
