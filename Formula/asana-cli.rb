@@ -5,12 +5,12 @@ class AsanaCli < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/danielsitek/asana-cli/releases/download/v0.6.0/asana-cli-v0.6.0-darwin-arm64.tar.gz"
-      sha256 "28aebccfdeb79716d0239f3b3b8357a0280b965607120d80e73b64a1da43c170"
+      url "https://github.com/danielsitek/asana-cli/releases/download/v0.6.1/asana-cli-v0.6.1-darwin-arm64.tar.gz"
+      sha256 "58ce7b9d69d144b23c5a352519dcfa52155848cb87cfe6ae0eabba4878cd2fae"
     end
     on_intel do
-      url "https://github.com/danielsitek/asana-cli/releases/download/v0.6.0/asana-cli-v0.6.0-darwin-x64.tar.gz"
-      sha256 "a357fdf1b56e77754dcd2d1a5484cda6fb1207a917ff244e4c2d0270c47aab57"
+      url "https://github.com/danielsitek/asana-cli/releases/download/v0.6.1/asana-cli-v0.6.1-darwin-x64.tar.gz"
+      sha256 "cc1c195c8ed1e3796049760b05b1426717970c6e9d2695a3d4e382b62119a12e"
     end
   end
 
