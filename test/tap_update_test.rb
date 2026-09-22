@@ -65,13 +65,13 @@ class TapUpdateTest < Minitest::Test
     assert_raises(TapUpdate::Error) { TapUpdate.validate_release!(release.merge('published_at' => nil), @config) }
   end
 
-  def test_generated_current_release_is_identical_and_repeatable
+  def test_generated_release_is_identical_and_repeatable
     release, manifest = fixture
     Dir.mktmpdir do |dir|
       first = TapUpdate.prepare(REPOSITORY, tag: 'v0.6.0', output: dir, github: FakeGithub.new(release, manifest))
       second = TapUpdate.prepare(REPOSITORY, tag: 'v0.6.0', output: dir, github: FakeGithub.new(release, manifest))
       assert_equal first, second
-      assert_equal '0.6.0', TapUpdate.current_version(File.join(TapUpdate::ROOT, 'Formula/asana-cli.rb'), @config)
+      assert_equal '0.6.0', TapUpdate.current_version(File.join(dir, 'asana-cli.rb'), @config)
     end
   end
 
@@ -82,10 +82,15 @@ class TapUpdateTest < Minitest::Test
   end
 
   def test_duplicate_event_is_no_op_and_older_release_cannot_publish
-    current = File.join(TapUpdate::ROOT, 'Formula/asana-cli.rb')
-    source = File.read(current)
-    assert_equal :same, TapUpdate.publication_status(source, current, @config, '0.6.0')
-    assert_equal :older, TapUpdate.publication_status('older candidate', current, @config, '0.5.0')
-    assert_raises(TapUpdate::Error) { TapUpdate.publication_status('changed same version', current, @config, '0.6.0') }
+    Dir.mktmpdir do |dir|
+      current = File.join(dir, 'asana-cli.rb')
+      source = "url \"https://github.com/#{REPOSITORY}/releases/download/v1.2.3/asana-cli-v1.2.3.tar.gz\"\n"
+      File.write(current, source)
+
+      assert_equal :same, TapUpdate.publication_status(source, current, @config, '1.2.3')
+      assert_equal :older, TapUpdate.publication_status('older candidate', current, @config, '1.2.2')
+      assert_equal :new, TapUpdate.publication_status('new candidate', current, @config, '1.2.4')
+      assert_raises(TapUpdate::Error) { TapUpdate.publication_status('changed same version', current, @config, '1.2.3') }
+    end
   end
 end
