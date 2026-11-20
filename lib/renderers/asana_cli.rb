@@ -29,7 +29,7 @@ module TapUpdate
 
             test do
               assert_match version.to_s, shell_output("\#{bin}/asana-cli --version")
-              output = shell_output("\#{bin}/asana-cli tasks get invalid 2>&1", 2)
+              output = shell_output("\#{bin}/asana-cli tasks get invalid --json 2>&1", 2)
               assert_match '"code":"invalid_usage"', output
             end
           end
