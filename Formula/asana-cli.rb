@@ -5,12 +5,12 @@ class AsanaCli < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/danielsitek/asana-cli/releases/download/v0.11.0/asana-cli-v0.11.0-darwin-arm64.tar.gz"
-      sha256 "f22fb2fa396b26edec6dee2faa11c842eab42fcbf2a856dd0db12006a441df6f"
+      url "https://github.com/danielsitek/asana-cli/releases/download/v0.12.0/asana-cli-v0.12.0-darwin-arm64.tar.gz"
+      sha256 "e2b8dccfaa76f5322adcee974507895c89f03d2298abbf8b26ae172054349e1f"
     end
     on_intel do
-      url "https://github.com/danielsitek/asana-cli/releases/download/v0.11.0/asana-cli-v0.11.0-darwin-x64.tar.gz"
-      sha256 "eea2103d80f379f7bc1f8660a1c6cacf60a01b56cc769510399808583944d66f"
+      url "https://github.com/danielsitek/asana-cli/releases/download/v0.12.0/asana-cli-v0.12.0-darwin-x64.tar.gz"
+      sha256 "2bb40c65bf0967293b8a479f55e493732eadb555aafe6a6dfbe1d189a3b47de6"
     end
   end
 
@@ -21,7 +21,7 @@ class AsanaCli < Formula
 
   test do
     assert_match version.to_s, shell_output("#{bin}/asana-cli --version")
-    output = shell_output("#{bin}/asana-cli tasks get invalid 2>&1", 2)
+    output = shell_output("#{bin}/asana-cli tasks get invalid --json 2>&1", 2)
     assert_match '"code":"invalid_usage"', output
   end
 end
